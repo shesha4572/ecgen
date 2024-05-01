@@ -71,7 +71,7 @@ class FirstFragment : Fragment() {
         binding.publicKey.text = "Public Key : $publicKey"
         binding.privateKey.text = "Private Key : $privateKey"
         val keyPair = KeyPair(publicKey , privateKey)
-        val subject = X500Name("CN=Dummy, OU=Dummy, O=Dummy, L=BOM, ST=MH, C=IN")
+        val subject = X500Name("CN=Dummy$androidId, C=IN")
         val csrBuilder = JcaPKCS10CertificationRequestBuilder(X500Name.getInstance(subject) , publicKey)
         val signer = JcaContentSignerBuilder("SHA256withECDSA").build(privateKey)
         val csr = csrBuilder.build(signer)
