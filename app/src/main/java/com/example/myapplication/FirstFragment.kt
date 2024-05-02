@@ -5,7 +5,11 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.android.volley.Request
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
 import com.example.myapplication.databinding.FragmentFirstBinding
 import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.jce.ECNamedCurveTable
@@ -17,6 +21,7 @@ import org.bouncycastle.openssl.jcajce.JcaPEMWriter
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder
 import org.bouncycastle.util.BigIntegers
+import org.json.JSONObject
 import java.io.StringWriter
 import java.math.BigInteger
 import java.security.KeyFactory
@@ -71,7 +76,8 @@ class FirstFragment : Fragment() {
         binding.publicKey.text = "Public Key : $publicKey"
         binding.privateKey.text = "Private Key : $privateKey"
         val keyPair = KeyPair(publicKey , privateKey)
-        val subject = X500Name("CN=Dummy$androidId, C=IN")
+        val dummy = BigIntegers.createRandomBigInteger(64 , SecureRandom()).toString(16)
+        val subject = X500Name("CN=$dummy, C=IN")
         val csrBuilder = JcaPKCS10CertificationRequestBuilder(X500Name.getInstance(subject) , publicKey)
         val signer = JcaContentSignerBuilder("SHA256withECDSA").build(privateKey)
         val csr = csrBuilder.build(signer)
@@ -79,6 +85,21 @@ class FirstFragment : Fragment() {
         JcaPEMWriter(sw).use { jpw -> jpw.writeObject(csr) }
         val pem = sw.toString()
         binding.csr.text = "CSR : $pem"
+        val req = JSONObject()
+        req.put("csr" , pem)
+        val jsonReq = JsonObjectRequest(
+            Request.Method.POST,
+            "http://192.168.93.193:8080/csr",
+            req,
+            {response ->
+                val cert = response.getString("certificate")
+                binding.csr.text = "CERTIFICATE : $cert"
+
+            },
+            { error -> Toast.makeText(this.context , error.message , Toast.LENGTH_LONG).show() }
+        )
+        val queue = Volley.newRequestQueue(this.context)
+        queue.add(jsonReq)
     }
 
     override fun onDestroyView() {

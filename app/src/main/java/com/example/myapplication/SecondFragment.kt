@@ -7,6 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.android.volley.NetworkResponse
 import com.android.volley.Request
@@ -35,7 +37,6 @@ class SecondFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         _binding = FragmentSecondBinding.inflate(inflater, container, false)
         return binding.root
 
@@ -55,7 +56,7 @@ class SecondFragment : Fragment() {
 
     private fun verify(name : String , email : String , mobile : String , aadhar : String) {
         val queue = Volley.newRequestQueue(this.context)
-        val url = "http://192.168.0.104:8000/verify/$aadhar"
+        val url = "http://192.168.93.193:8000/verify/$aadhar"
         val req = StringRequest(
             Request.Method.GET, url,
             { _ ->
@@ -67,7 +68,7 @@ class SecondFragment : Fragment() {
 
     private fun register(name : String , email : String , mobile : String , aadhar : String){
         val queue = Volley.newRequestQueue(this.context)
-            val url = "http://192.168.0.104:8080/personalinfo"
+            val url = "http://192.168.93.193:8080/personalinfo"
             val jsonBody = JSONObject()
             jsonBody.put("name", name)
             jsonBody.put("email", email)
