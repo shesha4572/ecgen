@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import com.android.volley.DefaultRetryPolicy
 import com.android.volley.NetworkResponse
 import com.android.volley.Request
 import com.android.volley.Response
@@ -56,7 +57,7 @@ class SecondFragment : Fragment() {
 
     private fun verify(name : String , email : String , mobile : String , aadhar : String) {
         val queue = Volley.newRequestQueue(this.context)
-        val url = "http://192.168.93.193:8000/verify/$aadhar"
+        val url = "http://192.168.10.193:8000/verify/$aadhar"
         val req = StringRequest(
             Request.Method.GET, url,
             { _ ->
@@ -68,7 +69,7 @@ class SecondFragment : Fragment() {
 
     private fun register(name : String , email : String , mobile : String , aadhar : String){
         val queue = Volley.newRequestQueue(this.context)
-            val url = "http://192.168.93.193:8080/personalinfo"
+            val url = "http://192.168.10.193:8080/personalinfo"
             val jsonBody = JSONObject()
             jsonBody.put("name", name)
             jsonBody.put("email", email)
@@ -108,6 +109,13 @@ class SecondFragment : Fragment() {
                     );
                 }
             }
+
+        // Set timeout for the request (in milliseconds)
+        val timeoutMilliseconds = 10000 // 10 seconds
+        request.setRetryPolicy(DefaultRetryPolicy(timeoutMilliseconds,
+            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
+
             VolleyLog.DEBUG = true
             queue.add(request)
         }

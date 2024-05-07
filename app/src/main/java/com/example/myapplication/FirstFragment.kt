@@ -2,11 +2,13 @@ package com.example.myapplication
 
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
@@ -21,14 +23,18 @@ import org.bouncycastle.openssl.jcajce.JcaPEMWriter
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder
 import org.bouncycastle.util.BigIntegers
+import org.bouncycastle.util.encoders.UTF8
 import org.json.JSONObject
 import java.io.StringWriter
 import java.math.BigInteger
+import java.nio.charset.Charset
 import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.PrivateKey
 import java.security.PublicKey
 import java.security.SecureRandom
+import java.security.Signature
+import java.util.Base64
 
 
 /**
@@ -89,7 +95,7 @@ class FirstFragment : Fragment() {
         req.put("csr" , pem)
         val jsonReq = JsonObjectRequest(
             Request.Method.POST,
-            "http://192.168.93.193:8080/csr",
+            "http://192.168.10.193:8080/csr",
             req,
             {response ->
                 val cert = response.getString("certificate")
@@ -98,8 +104,36 @@ class FirstFragment : Fragment() {
             },
             { error -> Toast.makeText(this.context , error.message , Toast.LENGTH_LONG).show() }
         )
+
+        // Set timeout for the request (in milliseconds)
+        val timeoutMilliseconds = 10000 // 10 seconds
+        jsonReq.setRetryPolicy(DefaultRetryPolicy(timeoutMilliseconds,
+            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
+
         val queue = Volley.newRequestQueue(this.context)
         queue.add(jsonReq)
+        val dataToSign = (activity as MainActivity).data
+        val signature = Signature.getInstance("SHA256withECDSA")
+
+// Initialize the Signature object with your private key
+        signature.initSign(privateKey)
+
+// Convert your data to bytes
+        val dataBytes = dataToSign.toByteArray()
+
+// Update the data in the signature object
+        signature.update(dataBytes)
+
+// Sign the data
+        val signedData = signature.sign()
+
+// Convert the signature to a Base64 string if needed
+        val base64Signature = Base64.getEncoder().encodeToString(signedData)
+        Log.i("SignedData", "Signed Data: ${String(signedData)}")
+        Log.i("SignatureBase64", "Signature (Base64): $base64Signature")
+
+
     }
 
     override fun onDestroyView() {
