@@ -1,5 +1,7 @@
 package com.example.myapplication
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
@@ -23,11 +25,9 @@ import org.bouncycastle.openssl.jcajce.JcaPEMWriter
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder
 import org.bouncycastle.util.BigIntegers
-import org.bouncycastle.util.encoders.UTF8
 import org.json.JSONObject
 import java.io.StringWriter
 import java.math.BigInteger
-import java.nio.charset.Charset
 import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.PrivateKey
@@ -132,7 +132,11 @@ class FirstFragment : Fragment() {
         val base64Signature = Base64.getEncoder().encodeToString(signedData)
         Log.i("SignedData", "Signed Data: ${String(signedData)}")
         Log.i("SignatureBase64", "Signature (Base64): $base64Signature")
-
+        val returnIntent = Intent()
+        returnIntent.putExtra("sign", base64Signature)
+        returnIntent.putExtra("data" , String(signedData))
+        (activity as MainActivity).setResult(Activity.RESULT_OK, returnIntent)
+        (activity as MainActivity).finish()
 
     }
 
